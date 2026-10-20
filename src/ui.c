@@ -612,8 +612,17 @@ static void show_context_menu(HWND lv, int x, int y)
     }
 }
 
+static LRESULT CALLBACK page_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+    if (msg == WM_COMMAND || msg == WM_NOTIFY)
+        return SendMessageW(g_main, msg, wp, lp);
+    return DefWindowProcW(hwnd, msg, wp, lp);
+}
+
 static LRESULT CALLBACK diag_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
+    if (msg == WM_COMMAND || msg == WM_NOTIFY)
+        return SendMessageW(g_main, msg, wp, lp);
     if (msg == WM_VSCROLL) {
         SCROLLINFO si = {0}; si.cbSize = sizeof(si); si.fMask = SIF_ALL;
         GetScrollInfo(hwnd, SB_VERT, &si);
@@ -827,7 +836,7 @@ static void register_classes(void)
     RegisterClassExW(&wc);
 
     WNDCLASSEXW page = {0}; page.cbSize = sizeof(page);
-    page.lpfnWndProc = DefWindowProcW; page.hInstance = g_inst;
+    page.lpfnWndProc = page_proc; page.hInstance = g_inst;
     page.hCursor = LoadCursorW(NULL, IDC_ARROW);
     page.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
     page.lpszClassName = L"CMPage";
