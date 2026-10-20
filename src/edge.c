@@ -45,7 +45,7 @@ static void load_sqlite(void)
 #define L(n,f) sq.n = (f)(void*)GetProcAddress(sq.lib, "sqlite3_" #n)
     L(open16, pf_open16); L(close, pf_close); L(prepare16, pf_prepare16); L(step, pf_step);
     L(finalize, pf_finalize); L(reset, pf_reset); L(errmsg16, pf_errmsg16);
-    L(col_text16, pf_column_text16);
+    sq.col_text16 = (pf_column_text16)(void*)GetProcAddress(sq.lib, "sqlite3_column_text16");
     sq.col_blob = (pf_column_blob)(void*)GetProcAddress(sq.lib, "sqlite3_column_blob");
     sq.col_bytes = (pf_column_bytes)(void*)GetProcAddress(sq.lib, "sqlite3_column_bytes");
     sq.col_int64 = (pf_column_int64)(void*)GetProcAddress(sq.lib, "sqlite3_column_int64");
@@ -55,7 +55,12 @@ static void load_sqlite(void)
 #undef L
 }
 
-bool cm_edge_available(void) { load_sqlite(); return sq.lib && sq.open16 && sq.prepare16; }
+bool cm_edge_available(void)
+{
+    load_sqlite();
+    return sq.lib && sq.open16 && sq.prepare16 && sq.step && sq.finalize && sq.close
+        && sq.col_text16 && sq.col_blob && sq.col_bytes && sq.col_int64;
+}
 
 void cm_edge_cred_free(cm_edge_cred *c)
 {
